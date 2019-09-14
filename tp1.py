@@ -5,6 +5,14 @@ clicked = False
 cursorX = 0
 cursorY = 0
 
+# Variáveis usadas para normalização: menores e maiores valores possíveis para as coordenadas do mundo
+minWorldX = -43.16
+maxWorldX = 24.84
+minWorldY = 0
+maxWorldY = 105
+minWorldZ = 0
+maxWorldZ = 2.44 #Altura goleira
+
 def mouse_callback(event,x,y,flags,param):
     if event == cv2.EVENT_FLAG_LBUTTON:
         clicked = True
@@ -14,9 +22,12 @@ def mouse_callback(event,x,y,flags,param):
         
 def window_is_open(windowname):
     return True if cv2.getWindowProperty(windowname, cv2.WND_PROP_VISIBLE) >= 1 else False
+    
+def normalize(value, min, max):
+    return (value-min)/(max-min)
 
 #Direct Linear Transformation
-def dlt(pixelCoords, worldCoords):
+def dlt(pixelCoords, worldCoords, maxPixelU, maxPixelV):
     if len(pixelCoords) != len(worldCoords):
         print("Erro: Quantidade diferente de pontos.")
         return []
@@ -28,6 +39,8 @@ def dlt(pixelCoords, worldCoords):
     for i in range(numPoints): 
         x, y, z, w = worldCoords[i][0], worldCoords[i][1], worldCoords[i][2], worldCoords[i][3] 
         u, v = pixelCoords[i][0], pixelCoords[i][1]
+        x, y, z = normalize(x, minWorldX, maxWorldX), normalize(y, minWorldY, maxWorldY), normalize(z, minWorldZ, maxWorldZ)
+        u, v = normalize(u, 0, maxPixelU), normalize(v, 0, maxPixelV)
         A.append([x, y, z, w, 0, 0, 0, 0, -u*x, -u*y, -u*z, -u])
         A.append([0, 0, 0, 0, x, y, z, w, -v*x, -v*y, -v*z, -v])
     
@@ -82,7 +95,9 @@ def main():
 
     
     """ Camera Resectioning - Finding the Camera Matrix P """
-    P = dlt(pixelCoords, worldCoords)
+    originalImg = cv2.imread('maracana2.jpg')
+    
+    P = dlt(pixelCoords, worldCoords, originalImg.shape[0]-1, originalImg.shape[1]-1)
     
     if P == []:
         return
@@ -90,10 +105,9 @@ def main():
     # 2D -> 2D projection (Z=0)
     P_2D = np.append(P[:,:2], P[:,3:], axis=1) # Elimination of column 3
     P_2D_Inv = np.linalg.inv(P_2D)
-        
+    
         
     """ Ex2 """
-    originalImg = cv2.imread('maracana2.jpg')
     img = originalImg
     cv2.namedWindow('image', flags=cv2.WINDOW_GUI_NORMAL)    # hides status, toolbar etc.
     cv2.resizeWindow('image', img.shape[1], img.shape[0])
