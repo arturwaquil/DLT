@@ -5,13 +5,6 @@ clicked = False
 cursorX = 0
 cursorY = 0
 
-# Variáveis usadas para normalização: menores e maiores valores possíveis para as coordenadas do mundo
-minWorldX = -43.16
-maxWorldX = 24.84
-minWorldY = 0
-maxWorldY = 105
-minWorldZ = 0
-maxWorldZ = 2.44 #Altura goleira
 
 def mouse_callback(event,x,y,flags,param):
     if event == cv2.EVENT_FLAG_LBUTTON:
@@ -22,12 +15,9 @@ def mouse_callback(event,x,y,flags,param):
         
 def window_is_open(windowname):
     return True if cv2.getWindowProperty(windowname, cv2.WND_PROP_VISIBLE) >= 1 else False
-    
-def normalize(value, min, max):
-    return (value-min)/(max-min)
 
 #Direct Linear Transformation
-def dlt(pixelCoords, worldCoords, maxPixelU, maxPixelV):
+def dlt(pixelCoords, worldCoords):
     if len(pixelCoords) != len(worldCoords):
         print("Erro: Quantidade diferente de pontos.")
         return []
@@ -39,15 +29,14 @@ def dlt(pixelCoords, worldCoords, maxPixelU, maxPixelV):
     for i in range(numPoints): 
         x, y, z, w = worldCoords[i][0], worldCoords[i][1], worldCoords[i][2], worldCoords[i][3] 
         u, v = pixelCoords[i][0], pixelCoords[i][1]
-        x, y, z = normalize(x, minWorldX, maxWorldX), normalize(y, minWorldY, maxWorldY), normalize(z, minWorldZ, maxWorldZ)
-        u, v = normalize(u, 0, maxPixelU), normalize(v, 0, maxPixelV)
         A.append([x, y, z, w, 0, 0, 0, 0, -u*x, -u*y, -u*z, -u])
         A.append([0, 0, 0, 0, x, y, z, w, -v*x, -v*y, -v*z, -v])
-    
-    U, S, Vh = np.linalg.svd(A)
+        
+    U, S, Vh = np.linalg.svd(np.asarray(A))
 
-    P = Vh[-1,:] # P receives the last line of Vh
+    P = Vh[-1,:] / Vh[-1,-1]  # The parameters are in the last line of Vh 
     P = P.reshape(3,4)
+    print(P)
     return P
 
 
@@ -95,9 +84,7 @@ def main():
 
     
     """ Camera Resectioning - Finding the Camera Matrix P """
-    originalImg = cv2.imread('maracana2.jpg')
-    
-    P = dlt(pixelCoords, worldCoords, originalImg.shape[0]-1, originalImg.shape[1]-1)
+    P = dlt(pixelCoords, worldCoords)
     
     if P == []:
         return
@@ -108,6 +95,7 @@ def main():
     
         
     """ Ex2 """
+    originalImg = cv2.imread('maracana2.jpg')
     img = originalImg
     cv2.namedWindow('image', flags=cv2.WINDOW_GUI_NORMAL)    # hides status, toolbar etc.
     cv2.resizeWindow('image', img.shape[1], img.shape[0])
