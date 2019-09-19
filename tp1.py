@@ -10,9 +10,6 @@ cursorY = 0
 def mouse_callback(event,x,y,flags,param):
 	img, origImg = param
 	if event == cv2.EVENT_FLAG_LBUTTON:
-	#   img = origImg.copy()
-	#    cv2.line(img,(x,0),(x,img.shape[0]),(0,0,255),2,cv2.LINE_AA)
-	#elif event == cv2.EVENT_FLAG_RBUTTON:
 		global clicked, cursorX, cursorY
 		clicked = True
 		cursorX = x
@@ -29,21 +26,14 @@ def dlt(pixelCoords, worldCoords):
 	else:    
 		numPoints = len(worldCoords)
 
-	#Tworld, worldCoords = Normalization(3, np.asarray(worldCoords))
-	#Tpixel, pixelCoords = Normalization(2, np.asarray(pixelCoords))
-
 	A = []
 
 	for i in range(numPoints): 
-		x, y, z, w = worldCoords[i][0], worldCoords[i][1], worldCoords[i][2], 1
+		x, y, z, w = worldCoords[i][0], worldCoords[i][1], 0, 1
 		u, v = pixelCoords[i][0], pixelCoords[i][1]
 		A.append([x, y, z, w, 0, 0, 0, 0, -u*x, -u*y, -u*z, -u])
 		A.append([0, 0, 0, 0, x, y, z, w, -v*x, -v*y, -v*z, -v])
 		
-
-	#for i in A:
-	#    print(i)
-
 	U, S, Vh = np.linalg.svd(np.asarray(A))
 
 	P = Vh[-1,:] / Vh[-1,-1]  # The parameters are in the last line of Vh 
@@ -54,7 +44,6 @@ def dlt(pixelCoords, worldCoords):
 	H = H / H[-1, -1]
 	print(H)
 	P = H.flatten(0)'''
-	print(P)
 
 
 	return P
@@ -62,26 +51,62 @@ def dlt(pixelCoords, worldCoords):
 
 def main():
 
+	'''____________________. G
+		                    |
+		                    |
+		                    |
+		                    |
+		                    |
+	  E .___________________. F
+		|                   |
+		|                   |
+		|                   |
+		|        A .________. C
+		|          |        |
+		|          |        |
+		|          |        | origem
+		|          |        .___
+		|          |        |  |
+		|          |        |  |
+		|          |        |  |
+		|          |        |  |
+		|          |        |__|
+		|          |        |
+		|          |        |
+		|          |        |
+		|        B .________|
+		|                   |
+		|                   |
+		|                   |
+	  D .___________________|
+		                    |
+		                    |
+		                    |
+		                    |
+		                    |
+		____________________|
+	'''
 
-	pixelCoords =  [[ 99, 473],	# PeqArea SupDir
-					[177, 508],	# PeqArea SupEsq
-					[ 99, 577],	# PeqArea InfDir
-					[237, 265],	# GraArea SupEsq 
-					[ 61, 267],	# GraArea SupDir
-					[ 61, 551],	# GraArea InfDir
-					[ 23, 525]]	# Campo   InfDir
+
+	pixelCoords =  [[474, 100],	# A - PeqArea SupDir
+					[509, 179],	# B - PeqArea SupEsq
+					[577, 100],	# C - PeqArea InfDir
+					[266, 238],	# D - GraArea SupEsq 
+					[268,  63],	# E - GraArea SupDir
+					[550,  63],	# F - GraArea InfDir
+					[525,  24]]	# G - Campo   InfDir
 	
 	#Origem na trave direita, X paralelo à linha de fundo e Y paralelo à lateral
-	worldCoords =  [[     0,  5.5, 0],	# PeqArea SupDir
-					[-18.32,  5.5, 0],	# PeqArea SupEsq
-					[     0,    0, 0],	# PeqArea InfDir
-					[-29.32, 16.5, 0],	# GraArea SupEsq
-					[    11, 16.5, 0],	# GraArea SupDir
-					[    11,    0, 0],	# GraArea InfDir 
-					[ 24.84,    0, 0]]	# Campo   InfDir 
+	worldCoords =  [[   5.5,  5.5],	# A - PeqArea SupDir
+					[-12.32,  5.5],	# B - PeqArea SupEsq
+					[   5.5,    0],	# C - PeqArea InfDir
+					[-23.82, 16.5],	# D - GraArea SupEsq
+					[  16.5, 16.5],	# E - GraArea SupDir
+					[  16.5,    0],	# F - GraArea InfDir 
+					[ 30.34,    0]]	# G - Campo   InfDir 
 	
 	""" Camera Resectioning - Finding the Camera Matrix P """
-	P = dlt(pixelCoords, worldCoords)
+	'''P = dlt(pixelCoords, worldCoords)
 	
 	if P is None:
 		return
@@ -89,8 +114,15 @@ def main():
 	# 2D -> 2D projection (Z=0)
 	P_2D = np.append(P[:,:2], P[:,3:], axis=1) # Elimination of column 3
 	P_2D_Inv = np.linalg.inv(P_2D)
-	
-		
+	'''
+
+	P, _ = DLT.DLTcalib(2, worldCoords, pixelCoords)
+	Pmatrix =[[P[0], P[1], P[2]], [P[3], P[4], P[5]], [P[6], P[7], P[8]]]
+	#for i in Pmatrix: print(i)
+
+	#P1 = dlt(pixelCoords, worldCoords)
+	#print(P1)
+
 	""" Ex2 """
 	origImg = cv2.imread('maracana2.jpg')
 	img = origImg.copy()
@@ -101,10 +133,28 @@ def main():
 	while window_is_open('image'):
 		cv2.imshow('image',img)
 
+
+		global clicked
+
 		if clicked:
-			# IMPLEMENTAR AQUI IDENTIFICACAO E PRINT DA LINHA
+
+			#print('\n\n\n\n\n\n')
+
+			cx, cy = DLT.DLTrecon(2, 1, P, (cursorX, cursorY, 1))
+			#print(cx,cy)
+
+			point1 = np.dot(Pmatrix, np.array([[30.34], [cy], [1]]))
+			point1 = point1 / point1[2]
+			#print(point1)
+			
+			point2 = np.dot(Pmatrix, np.array([[-37.66], [cy], [1]]))
+			point2 = point2 / point2[2] 
+			#print(point2)
+
 			img = origImg.copy()
-			cv2.line(img,(cursorX,0),(cursorX,img.shape[0]),(0,0,255),2,cv2.LINE_AA)
+			cv2.line(img, (point1[0],point1[1]), (point2[0],point2[1]),(0,0,255),2,cv2.LINE_AA)
+
+			clicked = False
 
 		if cv2.waitKey(20) == 27:
 			break
