@@ -1,6 +1,6 @@
 import cv2
 import numpy as np
-import DLT
+from DLT import DLTcalib
 
 clicked = False
 cursorX = 0
@@ -8,7 +8,6 @@ cursorY = 0
 
 
 def mouse_callback(event,x,y,flags,param):
-	img, origImg = param
 	if event == cv2.EVENT_FLAG_LBUTTON:
 		global clicked, cursorX, cursorY
 		clicked = True
@@ -45,18 +44,44 @@ def dlt(pixelCoords, worldCoords):
 	print(H)
 	P = H.flatten(0)'''
 
-
 	return P
 
 
-def main():
+def ex1():
+
+	origImg = cv2.imread('maracana1.jpg')
+	origImg = cv2.resize(origImg, None, fx=2, fy=2)
+	img = origImg.copy()
+	cv2.namedWindow('EX1', flags=cv2.WINDOW_GUI_NORMAL)    # hides status, toolbar etc.
+	cv2.resizeWindow('EX1', img.shape[1], img.shape[0])
+	cv2.setMouseCallback('EX1', mouse_callback)
+
+	while window_is_open('EX1'):
+		cv2.imshow('EX1',img)
+
+		global clicked
+
+		if clicked:
+
+			img = origImg.copy()
+			cv2.line(img, (0,0), (cursorX,cursorY),(255,0,0),2,cv2.LINE_AA)
+
+			clicked = False
+
+		if cv2.waitKey(20) == 27:
+			break
+	cv2.destroyAllWindows()
+
+
+
+def ex2():
 
 	'''____________________. G
-		                    |
-		                    |
-		                    |
-		                    |
-		                    |
+							|
+							|
+							|
+							|
+							|
 	  E .___________________. F
 		|                   |
 		|                   |
@@ -79,14 +104,13 @@ def main():
 		|                   |
 		|                   |
 	  D .___________________|
-		                    |
-		                    |
-		                    |
-		                    |
-		                    |
+							|
+							|
+							|
+							|
+							|
 		____________________|
 	'''
-
 
 	pixelCoords =  [[474, 100],	# A - PeqArea SupDir
 					[509, 179],	# B - PeqArea SupEsq
@@ -116,37 +140,36 @@ def main():
 	P_2D_Inv = np.linalg.inv(P_2D)
 	'''
 
-	P, _ = DLT.DLTcalib(2, worldCoords, pixelCoords)
-	Pmatrix =[[P[0], P[1], P[2]], [P[3], P[4], P[5]], [P[6], P[7], P[8]]]
+	P, _ = DLTcalib(2, worldCoords, pixelCoords)
+	Pmatrix = P.reshape(3,3)
 	#for i in Pmatrix: print(i)
 
-	#P1 = dlt(pixelCoords, worldCoords)
-	#print(P1)
-
-	""" Ex2 """
 	origImg = cv2.imread('maracana2.jpg')
 	img = origImg.copy()
-	cv2.namedWindow('image', flags=cv2.WINDOW_GUI_NORMAL)    # hides status, toolbar etc.
-	cv2.resizeWindow('image', img.shape[1], img.shape[0])
-	cv2.setMouseCallback('image', mouse_callback, (img,origImg))
+	cv2.namedWindow('EX2', flags=cv2.WINDOW_GUI_NORMAL)    # hides status, toolbar etc.
+	cv2.resizeWindow('EX2', img.shape[1], img.shape[0])
+	cv2.setMouseCallback('EX2', mouse_callback)
 
-	while window_is_open('image'):
-		cv2.imshow('image',img)
-
+	while window_is_open('EX2'):
+		cv2.imshow('EX2',img)
 
 		global clicked
 
 		if clicked:
 
-			#print('\n\n\n\n\n\n')
+			Pmatrixinv = np.linalg.inv(Pmatrix)
+			
+			# Cursor position in world coordinates: P^(-1) * [cursorX, cursorY, 1]
+			xyz = np.dot( Pmatrixinv,[cursorX,cursorY,1] ) 
+			(cx, cy) = xyz[0:2]/xyz[2]
+			#print(cx, cy)
 
-			cx, cy = DLT.DLTrecon(2, 1, P, (cursorX, cursorY, 1))
-			#print(cx,cy)
-
+			# First point (on the right touchline) in pixel coordinates: P * [30.34, cy, 1]
 			point1 = np.dot(Pmatrix, np.array([[30.34], [cy], [1]]))
 			point1 = point1 / point1[2]
 			#print(point1)
 			
+			# Second point (on the left touchline) in pixel coordinates: P * [-37.66, cy, 1]
 			point2 = np.dot(Pmatrix, np.array([[-37.66], [cy], [1]]))
 			point2 = point2 / point2[2] 
 			#print(point2)
@@ -162,4 +185,4 @@ def main():
 
 
 if __name__ == "__main__":
-	main()
+	ex1()
