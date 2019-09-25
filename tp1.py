@@ -1,6 +1,5 @@
 import cv2
 import numpy as np
-#from DLT import DLTcalib as DLT
 
 clicked = False
 cursorX = 0
@@ -18,7 +17,7 @@ def window_is_open(windowname):
 	return True if cv2.getWindowProperty(windowname, cv2.WND_PROP_VISIBLE) >= 1 else False
 
 #Direct Linear Transformation
-def dlt(pixelCoords, worldCoords):
+def dlt(pixelCoords, worldCoords, dim):
 	if len(pixelCoords) != len(worldCoords):
 		print("Erro: Quantidade diferente de pontos.")
 		return None
@@ -27,23 +26,26 @@ def dlt(pixelCoords, worldCoords):
 
 	A = []
 
-	for i in range(numPoints): 
-		x, y, z, w = worldCoords[i][0], worldCoords[i][1], worldCoords[i][2], 1
-		u, v = pixelCoords[i][0], pixelCoords[i][1]
-		A.append([x, y, z, w, 0, 0, 0, 0, -u*x, -u*y, -u*z, -u])
-		A.append([0, 0, 0, 0, x, y, z, w, -v*x, -v*y, -v*z, -v])
+	# 2D DLT
+	if dim is 2:
+		for i in range(numPoints): 
+			x, y, w = worldCoords[i][0], worldCoords[i][1], 1
+			u, v = pixelCoords[i][0], pixelCoords[i][1]
+			A.append([x, y, w, 0, 0, 0, -u*x, -u*y, -u])
+			A.append([0, 0, 0, x, y, w, -v*x, -v*y, -v])
+	# 3D DLT
+	elif dim is 3:
+		for i in range(numPoints): 
+			x, y, z, w = worldCoords[i][0], worldCoords[i][1], worldCoords[i][2], 1
+			u, v = pixelCoords[i][0], pixelCoords[i][1]
+			A.append([x, y, z, w, 0, 0, 0, 0, -u*x, -u*y, -u*z, -u])
+			A.append([0, 0, 0, 0, x, y, z, w, -v*x, -v*y, -v*z, -v])
 		
-	U, S, Vh = np.linalg.svd(A)
+	_, _, Vh = np.linalg.svd(A)
 
-	P = Vh[-1,:]# / Vh[-1,-1]  # The parameters are in the last line of Vh 
-	P = P.reshape(3,4)
-	'''
-	H = np.dot( np.dot( np.linalg.pinv(Tpixel), H ), Tworld )
-	print(H)
-	H = H / H[-1, -1]
-	print(H)
-	P = H.flatten(0)'''
-
+	P = Vh[-1,:]	# The parameters are in the last line of Vh 
+	P = P.reshape(3,dim+1)
+	
 	return P
 
 
@@ -90,9 +92,7 @@ def ex1():
 					[-12.32,  105,    0],   # H 
 					[ 30.34,  105,    0]]   # I 
 	
-	P = dlt(pixelCoords, worldCoords)#(3, worldCoords, pixelCoords)
-	Pmatrix = P.reshape(3,4)
-	print(Pmatrix)
+	P = dlt(pixelCoords, worldCoords, 3)
 
 	origImg = cv2.imread('maracana1.jpg')
 	origImg = cv2.resize(origImg, None, fx=2, fy=2)
@@ -108,16 +108,16 @@ def ex1():
 
 		if clicked:
 
-			Ptemp = np.hstack((Pmatrix[:,:2],Pmatrix[:,3:]))    # ignores third column (Z)
-			Pmatrixinv = np.linalg.inv(Ptemp)                   # to calculate inverse matrix
+			Ptemp = np.hstack((P[:,:2],P[:,3:]))			# ignores third column (Z)
+			Pinv = np.linalg.inv(Ptemp)						# to calculate inverse matrix
 			
 			# Cursor position in world coordinates: P^(-1) * [cursorX, cursorY, 0, 1]
-			xyz = np.dot( Pmatrixinv,[[cursorX],[cursorY],[1]] ) 
+			xyz = np.dot( Pinv,[[cursorX],[cursorY],[1]] ) 
 			(cx, cy) = xyz[0:2]/xyz[2]
 			#print(cx, cy)
 
 			# Player head position in pixel coordinates: P * [cx, cy, 1.80, 1]
-			point = np.dot(Pmatrix, np.array([[cx], [cy], [1.80], [1]]))
+			point = np.dot(P, np.array([[cx], [cy], [1.80], [1]]))
 			point = point / point[2]
 			#print(point1)
 			
@@ -174,27 +174,7 @@ def ex2():
 					[  16.5,    0, 0], # F - GraArea InfDir 
 					[ 30.34,    0, 0]] # G - Campo   InfDir 
 	
-	""" Camera Resectioning - Finding the Camera Matrix P """
-	'''P = dlt(pixelCoords, worldCoords)
-	
-	if P is None:
-		return
- 
-	# 2D -> 2D projection (Z=0)
-	P_2D = np.append(P[:,:2], P[:,3:], axis=1) # Elimination of column 3
-	P_2D_Inv = np.linalg.inv(P_2D)
-	'''
-
-	#P, _ = DLT(2, worldCoords, pixelCoords)
-	P = dlt(pixelCoords, worldCoords)
-	Pmatrix = P.reshape(3,4)
-	print(Pmatrix)
-	Pmatrix = np.hstack((Pmatrix[:,:2],Pmatrix[:,3:]))
-	print('aa')
-	print(Pmatrix)
-
-
-	#for i in Pmatrix: print(i)
+	P = dlt(pixelCoords, worldCoords, 2)
 
 	origImg = cv2.imread('maracana2.jpg')
 	img = origImg.copy()
@@ -209,20 +189,20 @@ def ex2():
 
 		if clicked:
 
-			Pmatrixinv = np.linalg.inv(Pmatrix)
+			Pinv = np.linalg.inv(P)
 			
 			# Cursor position in world coordinates: P^(-1) * [cursorX, cursorY, 1]
-			xyz = np.dot( Pmatrixinv,[cursorX,cursorY,1] ) 
+			xyz = np.dot( Pinv,[cursorX,cursorY,1] ) 
 			(cx, cy) = xyz[0:2]/xyz[2]
 			#print(cx, cy)
 
 			# First point (on the right touchline) in pixel coordinates: P * [30.34, cy, 1]
-			point1 = np.dot(Pmatrix, np.array([[30.34], [cy], [1]]))
+			point1 = np.dot(P, np.array([[30.34], [cy], [1]]))
 			point1 = point1 / point1[2]
 			#print(point1)
 			
 			# Second point (on the left touchline) in pixel coordinates: P * [-37.66, cy, 1]
-			point2 = np.dot(Pmatrix, np.array([[-37.66], [cy], [1]]))
+			point2 = np.dot(P, np.array([[-37.66], [cy], [1]]))
 			point2 = point2 / point2[2] 
 			#print(point2)
 
@@ -239,6 +219,3 @@ def ex2():
 if __name__ == "__main__":
 	ex1()
 	ex2()
-
-
-	A[:, :3]
