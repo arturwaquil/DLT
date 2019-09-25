@@ -166,13 +166,13 @@ def ex2():
 					[525,  24]] # G - Campo   InfDir
 	
 	#Origem na trave direita, X paralelo à linha de fundo e Y paralelo à lateral
-	worldCoords =  [[   5.5,  5.5, 0], # A - PeqArea SupDir
-					[-12.32,  5.5, 0], # B - PeqArea SupEsq
-					[   5.5,    0, 0], # C - PeqArea InfDir
-					[-23.82, 16.5, 0], # D - GraArea SupEsq
-					[  16.5, 16.5, 0], # E - GraArea SupDir
-					[  16.5,    0, 0], # F - GraArea InfDir 
-					[ 30.34,    0, 0]] # G - Campo   InfDir 
+	worldCoords =  [[   5.5,  5.5], # A - PeqArea SupDir
+					[-12.32,  5.5], # B - PeqArea SupEsq
+					[   5.5,    0], # C - PeqArea InfDir
+					[-23.82, 16.5], # D - GraArea SupEsq
+					[  16.5, 16.5], # E - GraArea SupDir
+					[  16.5,    0], # F - GraArea InfDir 
+					[ 30.34,    0]] # G - Campo   InfDir 
 	
 	P = dlt(pixelCoords, worldCoords, 2)
 
