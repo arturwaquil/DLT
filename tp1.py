@@ -137,7 +137,7 @@ def ex1():
 			j = "A"
 			for i in pixelCoords:
 				cv2.circle(img,(i[0],i[1]),5,(0,0,255),-1)
-				cv2.putText(img, j, (i[0],i[1]), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255,0,0), 2, cv2.LINE_AA)
+				cv2.putText(img, j, (i[0]+10,i[1]), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255,0,0), 2, cv2.LINE_AA)
 				j = chr(ord(j[0])+1)	# j = next char
 
 			right_clicked = False
@@ -245,5 +245,5 @@ def ex2():
 
 
 if __name__ == "__main__":
-	#ex1()
+	ex1()
 	ex2()
