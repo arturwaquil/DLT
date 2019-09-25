@@ -2,6 +2,7 @@ import cv2
 import numpy as np
 
 clicked = False
+right_clicked = False
 cursorX = 0
 cursorY = 0
 
@@ -12,6 +13,9 @@ def mouse_callback(event,x,y,flags,param):
 		clicked = True
 		cursorX = x
 		cursorY = y
+	elif event == cv2.EVENT_FLAG_RBUTTON:
+		global right_clicked
+		right_clicked = True
 		
 def window_is_open(windowname):
 	return True if cv2.getWindowProperty(windowname, cv2.WND_PROP_VISIBLE) >= 1 else False
@@ -104,7 +108,7 @@ def ex1():
 	while window_is_open('EX1'):
 		cv2.imshow('EX1',img)
 
-		global clicked
+		global clicked, right_clicked
 
 		if clicked:
 
@@ -125,6 +129,18 @@ def ex1():
 			cv2.line(img, (cursorX, cursorY),(point[0],point[1]), (255,0,0),2,cv2.LINE_AA)
 
 			clicked = False
+
+		if right_clicked:
+
+			img = origImg.copy()
+
+			j = "A"
+			for i in pixelCoords:
+				cv2.circle(img,(i[0],i[1]),5,(0,0,255),-1)
+				cv2.putText(img, j, (i[0],i[1]), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255,0,0), 2, cv2.LINE_AA)
+				j = chr(ord(j[0])+1)	# j = next char
+
+			right_clicked = False
 
 		if cv2.waitKey(20) == 27:
 			break
@@ -185,7 +201,7 @@ def ex2():
 	while window_is_open('EX2'):
 		cv2.imshow('EX2',img)
 
-		global clicked
+		global clicked, right_clicked
 
 		if clicked:
 
@@ -211,11 +227,23 @@ def ex2():
 
 			clicked = False
 
+		if right_clicked:
+
+			img = origImg.copy()
+			
+			j = "A"
+			for i in pixelCoords:
+				cv2.circle(img,(i[0],i[1]),5,(0,0,255),-1)
+				cv2.putText(img, j, (i[0]-20,i[1]+10), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255,0,0), 2, cv2.LINE_AA)
+				j = chr(ord(j[0])+1)	# j = next char
+
+			right_clicked = False
+
 		if cv2.waitKey(20) == 27:
 			break
 	cv2.destroyAllWindows()
 
 
 if __name__ == "__main__":
-	ex1()
+	#ex1()
 	ex2()
