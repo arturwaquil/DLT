@@ -217,7 +217,7 @@ def ex2():
 			point2 = np.dot(P, np.array([[-37.66], [cy], [1]]))
 			point2 = point2 / point2[2] 
 
-			#img = origImg.copy()
+			img = origImg.copy()
 			cv2.line(img, (point1[0],point1[1]), (point2[0],point2[1]),(0,0,255),2,cv2.LINE_AA)
 
 			clicked = False
@@ -240,5 +240,5 @@ def ex2():
 
 
 if __name__ == "__main__":
-	ex1()
+	#ex1()
 	ex2()
