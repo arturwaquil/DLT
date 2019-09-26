@@ -118,12 +118,10 @@ def ex1():
 			# Cursor position in world coordinates: P^(-1) * [cursorX, cursorY, 0, 1]
 			xyz = np.dot( Pinv,[[cursorX],[cursorY],[1]] ) 
 			(cx, cy) = xyz[0:2]/xyz[2]
-			#print(cx, cy)
 
 			# Player head position in pixel coordinates: P * [cx, cy, 1.80, 1]
 			point = np.dot(P, np.array([[cx], [cy], [1.80], [1]]))
 			point = point / point[2]
-			#print(point1)
 			
 			img = origImg.copy()
 			cv2.line(img, (cursorX, cursorY),(point[0],point[1]), (255,0,0),2,cv2.LINE_AA)
@@ -210,19 +208,16 @@ def ex2():
 			# Cursor position in world coordinates: P^(-1) * [cursorX, cursorY, 1]
 			xyz = np.dot( Pinv,[cursorX,cursorY,1] ) 
 			(cx, cy) = xyz[0:2]/xyz[2]
-			#print(cx, cy)
 
 			# First point (on the right touchline) in pixel coordinates: P * [30.34, cy, 1]
 			point1 = np.dot(P, np.array([[30.34], [cy], [1]]))
 			point1 = point1 / point1[2]
-			#print(point1)
 			
 			# Second point (on the left touchline) in pixel coordinates: P * [-37.66, cy, 1]
 			point2 = np.dot(P, np.array([[-37.66], [cy], [1]]))
 			point2 = point2 / point2[2] 
-			#print(point2)
 
-			img = origImg.copy()
+			#img = origImg.copy()
 			cv2.line(img, (point1[0],point1[1]), (point2[0],point2[1]),(0,0,255),2,cv2.LINE_AA)
 
 			clicked = False
