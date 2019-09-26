@@ -171,13 +171,13 @@ def ex2():
 		_______________|
 	'''
 
-	pixelCoords =  [[474, 100], # A - PeqArea SupDir
-					[509, 179], # B - PeqArea SupEsq
-					[577, 100], # C - PeqArea InfDir
-					[266, 238], # D - GraArea SupEsq 
-					[268,  63], # E - GraArea SupDir
-					[550,  63], # F - GraArea InfDir
-					[525,  24]] # G - Campo   InfDir
+	pixelCoords =  [[473,  99], # A - PeqArea SupDir
+					[507, 177], # B - PeqArea SupEsq
+					[576,  98], # C - PeqArea InfDir
+					[264, 240], # D - GraArea SupEsq 
+					[267,  61], # E - GraArea SupDir
+					[551,  61], # F - GraArea InfDir
+					[525,  23]] # G - Campo   InfDir
 	
 	#Origem na trave direita, X paralelo à linha de fundo e Y paralelo à lateral
 	worldCoords =  [[   5.5,  5.5], # A - PeqArea SupDir
