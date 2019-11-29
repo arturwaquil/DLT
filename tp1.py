@@ -98,7 +98,7 @@ def ex1():
 	
 	P = dlt(pixelCoords, worldCoords, 3)
 
-	origImg = cv2.imread('maracana1.jpg')
+	origImg = cv2.imread('imgs/maracana1.jpg')
 	origImg = cv2.resize(origImg, None, fx=2, fy=2)
 	img = origImg.copy()
 	cv2.namedWindow('EX1', flags=cv2.WINDOW_GUI_NORMAL)    # hides status, toolbar etc.
@@ -190,7 +190,7 @@ def ex2():
 	
 	P = dlt(pixelCoords, worldCoords, 2)
 
-	origImg = cv2.imread('maracana2.jpg')
+	origImg = cv2.imread('imgs/maracana2.jpg')
 	img = origImg.copy()
 	cv2.namedWindow('EX2', flags=cv2.WINDOW_GUI_NORMAL)    # hides status, toolbar etc.
 	cv2.resizeWindow('EX2', img.shape[1], img.shape[0])
@@ -240,5 +240,5 @@ def ex2():
 
 
 if __name__ == "__main__":
-	#ex1()
+	ex1()
 	ex2()
