@@ -1,4 +1,4 @@
-# Trabalho de Implementação 1 - Visão Computacional
+# Direct Linear Transformation
 
 Neste trabalho implementamos em Python uma calibração de câmera com o método DLT, para estimar a matriz de homografia em fotos de um campo de futebol.
 
@@ -10,4 +10,4 @@ Montamos um sistema de coordenadas definindo como origem a trave direita da gole
 
 <img src="imgs/sist-coords.png" width="600">
 
-Os resultados podem ser conferitos no [relatório](docs/relatorio.pdf)
+Os resultados podem ser conferitos no [relatório](docs/relatorio.pdf).
